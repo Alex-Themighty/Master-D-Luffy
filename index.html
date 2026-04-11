@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus: Interactive Differentiation Masterclass</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <script>
+        MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script type="text/javascript" id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js">
+    </script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 900px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .developer-credit {
+            text-align: center;
+            color: #7f8c8d;
+            font-style: italic;
+            font-size: 1.05rem;
+            margin-top: 0;
+            margin-bottom: 25px;
+        }
+        h2, h3 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        /* TABS CSS */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ccc;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            color: #7f8c8d;
+            transition: 0.3s;
+        }
+        .tab-btn:hover {
+            color: #2980b9;
+        }
+        .tab-btn.active {
+            color: #e74c3c;
+            border-bottom: 3px solid #e74c3c;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* TABLES & UI ELEMENTS */
+        .rule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        .rule-table th, .rule-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+        .rule-table th {
+            background-color: #3498db;
+            color: white;
+        }
+        .rule-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .rule-id {
+            font-weight: bold;
+            color: #e74c3c;
+            white-space: nowrap;
+        }
+        .calculator-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 8px;
+            border-top: 4px solid #d9534f;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .input-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        input[type="text"], input[type="number"] {
+            padding: 10px;
+            font-size: 1.1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: monospace;
+            box-sizing: border-box;
+        }
+        .main-func {
+            flex-grow: 1;
+        }
+        .small-input {
+            width: 100px;
+        }
+        button.calc-btn {
+            background-color: #d9534f;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        button.calc-btn:hover {
+            background-color: #c9302c;
+        }
+        button.action-btn {
+            background-color: #3498db;
+        }
+        button.action-btn:hover {
+            background-color: #2980b9;
+        }
+        
+        /* SOLVER UI CSS */
+        .steps-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            margin-top: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        .steps-container {
+            border-left: 4px solid #e74c3c;
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .step-block {
+            border-bottom: 1px dotted #ccc;
+            padding-bottom: 20px;
+            font-size: 1.1rem;
+        }
+        .step-block:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .step-label {
+            font-weight: bold;
+            color: #2980b9;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .rule-tag {
+            background: #fdf2cd;
+            color: #d35400;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .components-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-left: 3px solid #3498db;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            overflow-x: auto;
+        }
+        .final-answer-box {
+            background: #fcf4ec;
+            padding: 20px;
+            border-radius: 6px;
+        }
+        .error-box {
+            background: #fdf2f2;
+            color: #c0392b;
+            padding: 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .error-details {
+            display: block;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            font-weight: normal;
+            font-family: monospace;
+            background: #fce8e8;
+            padding: 8px;
+            border-radius: 4px;
+            color: #900;
+        }
+
+        /* TOOL 2 CSS */
+        .tool-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .tool-card h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #ecf0f1;
+            padding-bottom: 10px;
+            font-size: 1.15rem;
+        }
+        .analysis-result {
+            border-left: 4px solid #e74c3c;
+            padding-left: 20px;
+            margin-top: 20px;
+        }
+        .analysis-subtitle {
+            font-weight: bold;
+            color: #2980b9;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        .conclusion-box {
+            background: #f9f9f9;
+            border-left: 5px solid #8e44ad;
+            padding: 15px;
+            margin-top: 15px;
+            font-weight: normal;
+            color: #333;
+        }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #bdc3c7; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Differentiation Masterclass</h1>
+    <p class="developer-credit">Developed by Alex Themighty (v1.7 Final Engine Edition)</p>
+    
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="openTab('tab-theory', this)">Part 1: Rules & Solver</button>
+        <button class="tab-btn" onclick="openTab('tab-applications', this)">Part 2: Applications</button>
+    </div>
+
+    <div id="tab-theory" class="tab-content active">
+        <h2>Theory: The Comprehensive Formulas</h2>
+        <table class="rule-table">
+            <thead>
+                <tr>
+                    <th>Rule ID</th>
+                    <th>Standard Rule $(x)$</th>
+                    <th>Chain Rule $(u)$</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td class="rule-id">Rule 1: Power</td><td>$(x^\alpha)' = \alpha x^{\alpha-1}$</td><td>$(u^\alpha)' = \alpha u^{\alpha-1} \cdot u'$</td></tr>
+                <tr><td class="rule-id">Rule 2: Sqrt</td><td>$(\sqrt{x})' = \frac{1}{2\sqrt{x}}$</td><td>$(\sqrt{u})' = \frac{u'}{2\sqrt{u}}$</td></tr>
+                <tr><td class="rule-id">Rule 3: Inverse</td><td>$(\frac{1}{x})' = -\frac{1}{x^2}$</td><td>$(\frac{1}{u})' = -\frac{u'}{u^2}$</td></tr>
+                <tr><td class="rule-id">Rule 4: Sine</td><td>$(\sin x)' = \cos x$</td><td>$(\sin u)' = u' \cdot \cos u$</td></tr>
+                <tr><td class="rule-id">Rule 5: Cosine</td><td>$(\cos x)' = -\sin x$</td><td>$(\cos u)' = -u' \cdot \sin u$</td></tr>
+                <tr><td class="rule-id">Rule 6: Tangent</td><td>$(\tan x)' = \frac{1}{\cos^2 x}$</td><td>$(\tan u)' = \frac{u'}{\cos^2 u}$</td></tr>
+                <tr><td class="rule-id">Rule 7: Cotangent</td><td>$(\cot x)' = -\frac{1}{\sin^2 x}$</td><td>$(\cot u)' = -\frac{u'}{\sin^2 u}$</td></tr>
+                <tr><td class="rule-id">Rule 8: Exp (e)</td><td>$(e^x)' = e^x$</td><td>$(e^u)' = u' \cdot e^u$</td></tr>
+                <tr><td class="rule-id">Rule 9: Exp (a)</td><td>$(a^x)' = a^x \ln a$</td><td>$(a^u)' = u' \cdot a^u \ln a$</td></tr>
+                <tr><td class="rule-id">Rule 10: Ln</td><td>$(\ln x)' = \frac{1}{x}$</td><td>$(\ln u)' = \frac{u'}{u}$</td></tr>
+                <tr><td class="rule-id">Rule 11: Log (a)</td><td>$(\log_a x)' = \frac{1}{x \ln a}$</td><td>$(\log_a u)' = \frac{u'}{u \ln a}$</td></tr>
+                <tr><td class="rule-id">Rule 12: Product</td><td colspan="2">$(fg)' = f'g + fg'$</td></tr>
+                <tr><td class="rule-id">Rule 13: Quotient</td><td colspan="2">$\left(\frac{f}{g}\right)' = \frac{f'g - fg'}{g^2}$</td></tr>
+                <tr><td class="rule-id">Rule 14: Logarithmic Diff</td><td colspan="2">$(u^v)' = u^v \left[ v' \ln(u) + v \frac{u'}{u} \right]$</td></tr>
+            </tbody>
+        </table>
+
+        <div class="calculator-section">
+            <h2>Live Solver Engine</h2>
+            <div class="input-group">
+                <input type="text" id="funcInput1" class="main-func" value="log(3x-2, 5)">
+                <button class="calc-btn" onclick="solveDerivative()">Solve</button>
+            </div>
+            <div id="calcResult1"></div>
+        </div>
+    </div>
+
+    <div id="tab-applications" class="tab-content">
+        <h2>Applications of Differentiation</h2>
+        
+        <div class="calculator-section" style="background: #f8f9fa;">
+            <div class="input-group" style="margin-bottom: 25px;">
+                <strong>Master Function:</strong>
+                $f(x) =$ 
+                <input type="text" id="appFunc" class="main-func" value="3x^4 - 3">
+            </div>
+            
+            <div class="tool-card">
+                <h4>Tool 1: Gradient Tool</h4>
+                <p style="font-size: 0.85rem; color: #555; margin-top:-5px;">You can use numbers, fractions, or exact symbols like <code>sqrt(2)</code> or <code>pi/4</code>.</p>
+                
+                <div style="margin-bottom: 20px;">
+                    <strong>Instantaneous Gradient:</strong> Find the exact slope at a specific point.
+                    <div class="input-group" style="margin-top: 10px;">
+                        $x = $ <input type="text" id="instX" class="small-input" value="pi/4">
+                        <button class="calc-btn action-btn" onclick="calcInstantaneous()">Calculate</button>
+                    </div>
+                    <div id="instResult" style="display:none;"></div>
+                </div>
+                
+                <hr style="border: 0; border-top: 1px solid #e1e1e1; margin: 20px 0;">
+                
+                <div>
+                    <strong>Average Gradient:</strong> Find the secant slope between two points.
+                    <div class="input-group" style="margin-top: 10px;">
+                        $x_1 = $ <input type="text" id="avgX1" class="small-input" value="0">
+                        $x_2 = $ <input type="text" id="avgX2" class="small-input" value="pi/2">
+                        <button class="calc-btn action-btn" onclick="calcAverage()">Calculate</button>
+                    </div>
+                    <div id="avgResult" style="display:none;"></div>
+                </div>
+            </div>
+
+            <div class="tool-card">
+                <h4>Tool 2: Stationary Points Tool</h4>
+                <p style="font-size: 0.95rem; color: #555;">Automatically finds stationary points ($f'(x) = 0$) and determines their nature with a full rule breakdown.</p>
+                
+                <button class="calc-btn action-btn" onclick="findAndAnalyzeStationaryPoints()">Find & Analyze Turning Points</button>
+                <div id="statPointsResult" style="display:none;"></div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Tab switching logic
+    function openTab(tabId, btn) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // --- ENGINE CORE FIXES (V1.7 AST Engine) ---
+
+    // 1. Sanitize text input before parsing
+    function sanitize(raw) {
+        let str = raw.replace(/\[/g, '(').replace(/\]/g, ')').replace(/\{/g, '(').replace(/\}/g, ')');
+        str = str.replace(/ln/g, 'log');
+        return str;
+    }
+
+    // 2. Safely parse and rewrite 2-arg logs to avoid math.js backend crash
+    function safeParse(inputStr) {
+        let node = math.parse(inputStr);
+        node.traverse(function (n) {
+            if (n.type === 'FunctionNode' && n.fn.name === 'log' && n.args.length === 2) {
+                // Rename log(a,b) to a dummy function so math.js stops panicking
+                n.fn.name = 'logBase'; 
+            }
+        });
+        return node;
+    }
+
+    // 3. Safely calculate derivatives by feeding math.js natural log division
+    function safeDerivative(node) {
+        let backendNode = node.transform(function(n) {
+            if (n.type === 'FunctionNode' && n.fn.name === 'logBase') {
+                return math.parse(`(log((${n.args[0].toString()})) / log((${n.args[1].toString()})))`);
+            }
+            return n;
+        });
+        return math.derivative(backendNode, 'x');
+    }
+
+    // 4. Safely evaluate functions (Part 2) using natural log division
+    function safeEvaluate(node, scope) {
+        let backendNode = node.transform(function(n) {
+            if (n.type === 'FunctionNode' && n.fn.name === 'logBase') {
+                return math.parse(`(log((${n.args[0].toString()})) / log((${n.args[1].toString()})))`);
+            }
+            return n;
+        });
+        return backendNode.evaluate(scope);
+    }
+
+    // 5. Custom LaTeX Renderer to beautifully format our dummy function and ln()
+    const texOptions = {
+        handler: function (n, options) {
+            if (n.type === 'FunctionNode' && n.fn.name === 'logBase') {
+                return '\\log_{' + n.args[1].toTex(options) + '}\\left(' + n.args[0].toTex(options) + '\\right)';
+            }
+            if (n.type === 'FunctionNode' && n.fn.name === 'log' && n.args.length === 1) {
+                return '\\ln\\left(' + n.args[0].toTex(options) + '\\right)';
+            }
+        }
+    };
+
+    function isX(node) {
+        return node && node.type === 'SymbolNode' && node.name === 'x';
+    }
+
+    // RECOGNIZES FRACTIONS, PI MULTIPLES, AND IRRATIONALS
+    function recognizeExact(val, tolerance = 1e-5) {
+        if (Math.abs(val) < tolerance) return "0";
+        let sign = val < 0 ? "-" : "";
+        val = Math.abs(val);
+
+        function getFraction(num) {
+            if (num < 1e-10) return {num: 0, den: 1};
+            let h1 = 1, h2 = 0, k1 = 0, k2 = 1;
+            let b = num;
+            for (let i = 0; i < 20; i++) {
+                let a = Math.floor(b);
+                let aux = h1; h1 = a * h1 + h2; h2 = aux;
+                aux = k1; k1 = a * k1 + k2; k2 = aux;
+                if (Math.abs(num - h1 / k1) <= tolerance) break;
+                if (b - a < 1e-10) break; 
+                b = 1 / (b - a);
+            }
+            if (k1 <= 150) return { num: h1, den: k1 };
+            return null;
+        }
+
+        let frac = getFraction(val);
+        if (frac && frac.num !== 0) {
+            if (frac.den === 1) return sign + frac.num;
+            return sign + "\\frac{" + frac.num + "}{" + frac.den + "}";
+        }
+
+        let piFrac = getFraction(val / Math.PI);
+        if (piFrac && piFrac.num !== 0) {
+            let numStr = piFrac.num === 1 ? "\\pi" : piFrac.num + "\\pi";
+            if (piFrac.den === 1) return sign + numStr;
+            return sign + "\\frac{" + numStr + "}{" + piFrac.den + "}";
+        }
+
+        let sqFrac = getFraction(val * val);
+        if (sqFrac && sqFrac.num !== 0) {
+            if (sqFrac.den === 1) return sign + "\\sqrt{" + sqFrac.num + "}";
+            if (sqFrac.num === 1) return sign + "\\frac{1}{\\sqrt{" + sqFrac.den + "}}";
+            return sign + "\\frac{\\sqrt{" + sqFrac.num + "}}{\\sqrt{" + sqFrac.den + "}}";
+        }
+
+        return sign + math.round(val, 4).toString();
+    }
+
+    // --- PART 1: SOLVER LOGIC ---
+    function solveDerivative() {
+        const rawInput = document.getElementById('funcInput1').value;
+        const resultDiv = document.getElementById('calcResult1');
+        if (!rawInput.trim()) {
+            resultDiv.innerHTML = "";
+            return;
+        }
+
+        const input = sanitize(rawInput);
+        let stepsHTML = `<div class="steps-wrapper"><div class="steps-container">`;
+        
+        try {
+            const node = safeParse(input);
+            stepsHTML += `
+                <div class="step-block">
+                    <div class="step-label">STEP 1: IDENTIFY FUNCTION</div>
+                    $$f(x) = ${node.toTex(texOptions)}$$
+                </div>
+            `;
+            
+            let finalDerivNode = null;
+            
+            // --- PRODUCT RULE (12) ---
+            if (node.type === 'OperatorNode' && node.op === '*') {
+                const f = node.args[0], g = node.args[1]; 
+                const fPrime = safeDerivative(f), gPrime = safeDerivative(g);
+
+                stepsHTML += `
+                    <div class="step-block">
+                        <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 12: PRODUCT</span></div>
+                        $$(fg)' = f'g + fg'$$
+                    </div>
+                    <div class="step-block">
+                        <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                        <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                        $f = ${f.toTex(texOptions)}$, &nbsp; $g = ${g.toTex(texOptions)}$ <br>
+                        $f' = ${math.simplify(fPrime).toTex(texOptions)}$, &nbsp; $g' = ${math.simplify(gPrime).toTex(texOptions)}$
+                        </div>
+                    </div>
+                    <div class="step-block">
+                        <div class="step-label">STEP 4: SUBSTITUTION</div>
+                        $$f'(x) = \\left(${fPrime.toTex(texOptions)}\\right) \\cdot \\left(${g.toTex(texOptions)}\\right) + \\left(${f.toTex(texOptions)}\\right) \\cdot \\left(${gPrime.toTex(texOptions)}\\right)$$
+                    </div>
+                `;
+                finalDerivNode = math.parse(`(${fPrime.toString()}) * (${g.toString()}) + (${f.toString()}) * (${gPrime.toString()})`);
+            } 
+            // --- QUOTIENT (13) & INVERSE (3) RULES ---
+            else if (node.type === 'OperatorNode' && node.op === '/') {
+                let num = node.args[0];
+                let u = node.args[1];
+                
+                if (num.type === 'ParenthesisNode') num = num.content;
+
+                // Inverse Rule
+                if (num.isConstantNode) {
+                    const k = num.value;
+                    if (k == 1) {
+                        if (isX(u)) {
+                            stepsHTML += `
+                                <div class="step-block">
+                                    <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 3: INVERSE</span></div>
+                                    $$(\\frac{1}{x})' = -\\frac{1}{x^2}$$
+                                </div>
+                            `;
+                            finalDerivNode = math.parse(`-1 / (x^2)`);
+                        } else {
+                            const uPrime = safeDerivative(u);
+                            stepsHTML += `
+                                <div class="step-block">
+                                    <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 3: INVERSE (CHAIN)</span></div>
+                                    $$(\\frac{1}{u})' = -\\frac{u'}{u^2}$$
+                                </div>
+                                <div class="step-block">
+                                    <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                                    <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                                    $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                                    </div>
+                                </div>
+                                <div class="step-block">
+                                    <div class="step-label">STEP 4: SUBSTITUTION</div>
+                                    $$f'(x) = -\\frac{${uPrime.toTex(texOptions)}}{\\left(${u.toTex(texOptions)}\\right)^2}$$
+                                </div>
+                            `;
+                            finalDerivNode = math.parse(`-1 * (${uPrime.toString()}) / ((${u.toString()})^2)`);
+                        }
+                    } else {
+                        // Scalar Inverse Rule
+                        if (isX(u)) {
+                            stepsHTML += `
+                                <div class="step-block">
+                                    <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">SCALAR INVERSE</span></div>
+                                    $$(\\frac{k}{x})' = -\\frac{k}{x^2}$$
+                                </div>
+                            `;
+                            finalDerivNode = math.parse(`(-1 * ${k}) / (x^2)`);
+                        } else {
+                            const uPrime = safeDerivative(u);
+                            stepsHTML += `
+                                <div class="step-block">
+                                    <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">SCALAR INVERSE (CHAIN)</span></div>
+                                    $$(\\frac{k}{u})' = -\\frac{k \\cdot u'}{u^2}$$
+                                </div>
+                                <div class="step-block">
+                                    <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                                    <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                                    $k = ${k}$, $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                                    </div>
+                                </div>
+                                <div class="step-block">
+                                    <div class="step-label">STEP 4: SUBSTITUTION</div>
+                                    $$f'(x) = -\\frac{${k} \\cdot \\left(${uPrime.toTex(texOptions)}\\right)}{\\left(${u.toTex(texOptions)}\\right)^2}$$
+                                </div>
+                            `;
+                            finalDerivNode = math.parse(`(-1 * ${k} * (${uPrime.toString()})) / ((${u.toString()})^2)`);
+                        }
+                    }
+                } 
+                // General Quotient Rule
+                else {
+                    const f = num, g = u; 
+                    const fPrime = safeDerivative(f), gPrime = safeDerivative(g);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 13: QUOTIENT</span></div>
+                            $$\\left(\\frac{f}{g}\\right)' = \\frac{f'g - fg'}{g^2}$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $f = ${f.toTex(texOptions)}$, &nbsp; $g = ${g.toTex(texOptions)}$ <br>
+                            $f' = ${math.simplify(fPrime).toTex(texOptions)}$, &nbsp; $g' = ${math.simplify(gPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = \\frac{\\left(${fPrime.toTex(texOptions)}\\right) \\cdot \\left(${g.toTex(texOptions)}\\right) - \\left(${f.toTex(texOptions)}\\right) \\cdot \\left(${gPrime.toTex(texOptions)}\\right)}{\\left(${g.toTex(texOptions)}\\right)^2}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`((${fPrime.toString()}) * (${g.toString()}) - (${f.toString()}) * (${gPrime.toString()})) / ((${g.toString()})^2)`);
+                }
+            } 
+            // --- SQRT RULE (2) ---
+            else if (node.type === 'FunctionNode' && node.fn.name === 'sqrt') {
+                const u = node.args[0];
+                if (isX(u)) {
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 2: SQRT</span></div>
+                            $$(\\sqrt{x})' = \\frac{1}{2\\sqrt{x}}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`1 / (2 * sqrt(x))`);
+                } else {
+                    const uPrime = safeDerivative(u);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 2: SQRT (CHAIN)</span></div>
+                            $$(\\sqrt{u})' = \\frac{u'}{2\\sqrt{u}}$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = \\frac{${uPrime.toTex(texOptions)}}{2\\sqrt{${u.toTex(texOptions)}}}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`(${uPrime.toString()}) / (2 * sqrt(${u.toString()}))`);
+                }
+            } 
+            // --- SINE RULE (4) ---
+            else if (node.type === 'FunctionNode' && node.fn.name === 'sin') {
+                const u = node.args[0];
+                if (isX(u)) {
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 4: SINE</span></div>
+                            $$(\\sin x)' = \\cos x$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`cos(x)`);
+                } else {
+                    const uPrime = safeDerivative(u);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 4: SINE (CHAIN)</span></div>
+                            $$(\\sin u)' = u' \\cdot \\cos u$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = \\left(${uPrime.toTex(texOptions)}\\right) \\cdot \\cos\\left(${u.toTex(texOptions)}\\right)$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`(${uPrime.toString()}) * cos(${u.toString()})`);
+                }
+            }
+            // --- COSINE RULE (5) ---
+            else if (node.type === 'FunctionNode' && node.fn.name === 'cos') {
+                const u = node.args[0];
+                if (isX(u)) {
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 5: COSINE</span></div>
+                            $$(\\cos x)' = -\\sin x$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`-sin(x)`);
+                } else {
+                    const uPrime = safeDerivative(u);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 5: COSINE (CHAIN)</span></div>
+                            $$(\\cos u)' = -u' \\cdot \\sin u$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = -\\left(${uPrime.toTex(texOptions)}\\right) \\cdot \\sin\\left(${u.toTex(texOptions)}\\right)$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`-(${uPrime.toString()}) * sin(${u.toString()})`);
+                }
+            }
+            // --- TANGENT RULE (6) ---
+            else if (node.type === 'FunctionNode' && node.fn.name === 'tan') {
+                const u = node.args[0];
+                if (isX(u)) {
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 6: TANGENT</span></div>
+                            $$(\\tan x)' = \\frac{1}{\\cos^2 x}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`1 / ((cos(x))^2)`);
+                } else {
+                    const uPrime = safeDerivative(u);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 6: TANGENT (CHAIN)</span></div>
+                            $$(\\tan u)' = \\frac{u'}{\\cos^2 u}$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = \\frac{${uPrime.toTex(texOptions)}}{\\cos^2\\left(${u.toTex(texOptions)}\\right)}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`(${uPrime.toString()}) / ((cos(${u.toString()}))^2)`);
+                }
+            }
+            // --- COTANGENT RULE (7) ---
+            else if (node.type === 'FunctionNode' && node.fn.name === 'cot') {
+                const u = node.args[0];
+                if (isX(u)) {
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 7: COTANGENT</span></div>
+                            $$(\\cot x)' = -\\frac{1}{\\sin^2 x}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`-1 / ((sin(x))^2)`);
+                } else {
+                    const uPrime = safeDerivative(u);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 7: COTANGENT (CHAIN)</span></div>
+                            $$(\\cot u)' = -\\frac{u'}{\\sin^2 u}$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = -\\frac{${uPrime.toTex(texOptions)}}{\\sin^2\\left(${u.toTex(texOptions)}\\right)}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`-(${uPrime.toString()}) / ((sin(${u.toString()}))^2)`);
+                }
+            }
+            // --- EXPONENTIAL e^x RULE (8) ---
+            else if (node.type === 'FunctionNode' && node.fn.name === 'exp') {
+                const u = node.args[0];
+                if (isX(u)) {
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 8: EXP (e)</span></div>
+                            $$(e^x)' = e^x$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`exp(x)`);
+                } else {
+                    const uPrime = safeDerivative(u);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 8: EXP (e) (CHAIN)</span></div>
+                            $$(e^u)' = u' \\cdot e^u$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = \\left(${uPrime.toTex(texOptions)}\\right) \\cdot e^{${u.toTex(texOptions)}}$$
+                        </div>
+                    `;
+                    finalDerivNode = math.parse(`(${uPrime.toString()}) * exp(${u.toString()})`);
+                }
+            }
+            // --- LN / LOG RULE (10 & 11) ---
+            else if (node.type === 'FunctionNode' && (node.fn.name === 'log' || node.fn.name === 'logBase')) {
+                const u = node.args[0];
+                
+                // Natural Logarithm (Rule 10)
+                if (node.fn.name === 'log' && node.args.length === 1) {
+                    if (isX(u)) {
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 10: LN</span></div>
+                                $$(\\ln x)' = \\frac{1}{x}$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`1 / x`);
+                    } else {
+                        const uPrime = safeDerivative(u);
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 10: LN (CHAIN)</span></div>
+                                $$(\\ln u)' = \\frac{u'}{u}$$
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                                <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                                $u = ${u.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                                </div>
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 4: SUBSTITUTION</div>
+                                $$f'(x) = \\frac{${uPrime.toTex(texOptions)}}{${u.toTex(texOptions)}}$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`(${uPrime.toString()}) / (${u.toString()})`);
+                    }
+                } 
+                // Log Base a (Rule 11)
+                else if (node.fn.name === 'logBase' && node.args.length === 2) {
+                    const a = node.args[1];
+                    if (isX(u)) {
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 11: LOG (a)</span></div>
+                                $$(\\log_a x)' = \\frac{1}{x \\ln a}$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`1 / (x * log(${a.toString()}))`);
+                    } else {
+                        const uPrime = safeDerivative(u);
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 11: LOG (a) (CHAIN)</span></div>
+                                $$(\\log_a u)' = \\frac{u'}{u \\ln a}$$
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                                <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                                $u = ${u.toTex(texOptions)}$, $a = ${a.toTex(texOptions)}$, $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                                </div>
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 4: SUBSTITUTION</div>
+                                $$f'(x) = \\frac{${uPrime.toTex(texOptions)}}{\\left(${u.toTex(texOptions)}\\right) \\cdot \\ln(${a.toTex(texOptions)})}$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`(${uPrime.toString()}) / ((${u.toString()}) * log(${a.toString()}))`);
+                    }
+                }
+            }
+            // --- EXPONENTIATION (^): Power (1), Exp_a (9), vs Function Exponent (14) ---
+            else if (node.type === 'OperatorNode' && node.op === '^') {
+                const u = node.args[0], v = node.args[1]; 
+                
+                // POWER RULE (v is a constant)
+                if (v.isConstantNode && !u.isConstantNode) {
+                    if (isX(u)) {
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 1: POWER</span></div>
+                                $$(x^\\alpha)' = \\alpha x^{\\alpha-1}$$
+                            </div>
+                        `;
+                        finalDerivNode = safeDerivative(node); 
+                    } else {
+                        const uPrime = safeDerivative(u);
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 1: POWER (CHAIN)</span></div>
+                                $$(u^\\alpha)' = \\alpha u^{\\alpha-1} \\cdot u'$$
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                                <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                                $u = ${u.toTex(texOptions)}$, $\\alpha = ${v.toTex(texOptions)}$ <br>
+                                $u' = ${math.simplify(uPrime).toTex(texOptions)}$
+                                </div>
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 4: SUBSTITUTION</div>
+                                $$f'(x) = \\left(${v.toTex(texOptions)}\\right) \\cdot \\left(${u.toTex(texOptions)}\\right)^{\\left(${v.toTex(texOptions)}\\right)-1} \\cdot \\left(${uPrime.toTex(texOptions)}\\right)$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`(${v.toString()}) * ((${u.toString()})^(${v.toString()} - 1)) * (${uPrime.toString()})`);
+                    }
+                }
+                // EXPONENT BASE a RULE (u is a constant)
+                else if (u.isConstantNode && !v.isConstantNode) {
+                    const a = u;
+                    if (isX(v)) {
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 9: EXP (a)</span></div>
+                                $$(a^x)' = a^x \\ln a$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`(${a.toString()}^x) * log(${a.toString()})`);
+                    } else {
+                        const vPrime = safeDerivative(v);
+                        stepsHTML += `
+                            <div class="step-block">
+                                <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 9: EXP (a) (CHAIN)</span></div>
+                                $$(a^u)' = u' \\cdot a^u \\ln a$$
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                                <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                                $a = ${a.toTex(texOptions)}$, $u = ${v.toTex(texOptions)}$, $u' = ${math.simplify(vPrime).toTex(texOptions)}$
+                                </div>
+                            </div>
+                            <div class="step-block">
+                                <div class="step-label">STEP 4: SUBSTITUTION</div>
+                                $$f'(x) = \\left(${vPrime.toTex(texOptions)}\\right) \\cdot \\left(${a.toTex(texOptions)}\\right)^{${v.toTex(texOptions)}} \\cdot \\ln(${a.toTex(texOptions)})$$
+                            </div>
+                        `;
+                        finalDerivNode = math.parse(`(${vPrime.toString()}) * (${a.toString()}^(${v.toString()})) * log(${a.toString()})`);
+                    }
+                }
+                // FUNCTION EXPONENT RULE (u^v)
+                else {
+                    const uPrime = safeDerivative(u), vPrime = safeDerivative(v);
+                    stepsHTML += `
+                        <div class="step-block">
+                            <div class="step-label">STEP 2: RULE APPLICATION <span class="rule-tag">RULE 14: LOGARITHMIC DIFF</span></div>
+                            $$(u^v)' = u^v \\left[ v' \\ln(u) + v \\frac{u'}{u} \\right]$$
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 3: IDENTIFY COMPONENTS</div>
+                            <div class="components-box" style="font-family: monospace; font-size: 1rem;">
+                            $u = ${u.toTex(texOptions)}$, &nbsp; $v = ${v.toTex(texOptions)}$ <br>
+                            $u' = ${math.simplify(uPrime).toTex(texOptions)}$, &nbsp; $v' = ${math.simplify(vPrime).toTex(texOptions)}$
+                            </div>
+                        </div>
+                        <div class="step-block">
+                            <div class="step-label">STEP 4: SUBSTITUTION</div>
+                            $$f'(x) = \\left(${u.toTex(texOptions)}\\right)^{\\left(${v.toTex(texOptions)}\\right)} \\left[ \\left(${vPrime.toTex(texOptions)}\\right) \\ln\\left(${u.toTex(texOptions)}\\right) + \\left(${v.toTex(texOptions)}\\right) \\frac{${uPrime.toTex(texOptions)}}{${u.toTex(texOptions)}} \\right]$$
+                        </div>
+                    `;
+                }
+            }
+            // --- FALLBACK ---
+            else {
+                 stepsHTML += `
+                    <div class="step-block">
+                        <div class="step-label">STEP 2: BASIC RULE</div>
+                        Apply standard derivative rules.
+                    </div>
+                 `;
+            }
+
+            const simplified = finalDerivNode ? math.simplify(finalDerivNode) : math.simplify(safeDerivative(node));
+            stepsHTML += `
+                <div class="step-block" style="border-bottom: none;">
+                    <div class="final-answer-box">
+                        <div class="step-label" style="margin-bottom: 5px;">FINAL SIMPLIFIED ANSWER</div>
+                        $$f'(x) = ${simplified.toTex(texOptions)}$$
+                    </div>
+                </div>
+            `;
+            
+        } catch (e) {
+            stepsHTML += `
+                <div class="error-box">
+                    Syntax Error: Please check your formula.
+                    <span class="error-details">Details: ${e.message}</span>
+                </div>
+            `;
+        }
+        
+        stepsHTML += `</div></div>`;
+        resultDiv.innerHTML = stepsHTML;
+        MathJax.typesetPromise([resultDiv]);
+    }
+
+    // --- PART 2: APPLICATIONS LOGIC ---
+    function getAppFuncNode() {
+        return safeParse(sanitize(document.getElementById('appFunc').value));
+    }
+
+    // Tool 1: Instantaneous
+    function calcInstantaneous() {
+        const resultDiv = document.getElementById('instResult');
+        try {
+            const node = getAppFuncNode();
+            const xValStr = sanitize(document.getElementById('instX').value);
+            const xVal = math.evaluate(xValStr);
+            
+            const d1 = safeDerivative(node);
+            const val = safeEvaluate(d1, {x: xVal});
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div class="components-box" style="margin-top:10px; display:inline-block;">
+                    $f'(x) = ${d1.toTex(texOptions)}$ <br>
+                    $f'(${recognizeExact(xVal)}) = ${recognizeExact(val)}$
+                </div>
+            `;
+            MathJax.typesetPromise([resultDiv]);
+        } catch(e) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span style="color:red; font-weight:bold;">Error: Check syntax in Master Function or X field.</span>`;
+        }
+    }
+
+    // Tool 1: Average
+    function calcAverage() {
+        const resultDiv = document.getElementById('avgResult');
+        try {
+            const node = getAppFuncNode();
+            const x1Str = sanitize(document.getElementById('avgX1').value);
+            const x2Str = sanitize(document.getElementById('avgX2').value);
+            
+            const x1 = math.evaluate(x1Str);
+            const x2 = math.evaluate(x2Str);
+            
+            if (Math.abs(x1 - x2) < 1e-10) throw new Error("x1 and x2 cannot be the same.");
+            
+            const y1 = safeEvaluate(node, {x: x1});
+            const y2 = safeEvaluate(node, {x: x2});
+            const m = (y2 - y1) / (x2 - x1);
+            
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <div class="components-box" style="margin-top:10px; display:inline-block;">
+                    $f(${recognizeExact(x1)}) = ${recognizeExact(y1)}$, &nbsp; $f(${recognizeExact(x2)}) = ${recognizeExact(y2)}$ <br><br>
+                    $m = \\frac{${recognizeExact(y2)} - (${recognizeExact(y1)})}{${recognizeExact(x2)} - (${recognizeExact(x1)})} = ${recognizeExact(m)}$
+                </div>
+            `;
+            MathJax.typesetPromise([resultDiv]);
+        } catch(e) {
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<span style="color:red; font-weight:bold;">Error: ${e.message}</span>`;
+        }
+    }
+
+    // Tool 2: Automatic Finding & Nature
+    function findAndAnalyzeStationaryPoints() {
+        const resultDiv = document.getElementById('statPointsResult');
+        try {
+            const node = getAppFuncNode();
+            const d1 = safeDerivative(node);
+            const d2 = safeDerivative(d1);
+            
+            let stationaryPoints = [];
+            let step = 0.05;
+            
+            function addRoot(r) {
+                if (Math.abs(r) < 1e-7) r = 0;
+                if (Math.abs(safeEvaluate(d1, {x: r})) > 1e-3) return; 
+                
+                if (!stationaryPoints.some(existing => Math.abs(existing - r) < 1e-4)) {
+                    stationaryPoints.push(r);
+                }
+            }
+
+            for(let x = -15; x <= 15; x += step) {
+                let a = x, b = x + step;
+                
+                let yA = safeEvaluate(d1, {x: a});
+                let yB = safeEvaluate(d1, {x: b});
+                
+                if (Math.abs(yA) < 1e-9) addRoot(a);
+                else if (Math.abs(yB) < 1e-9) addRoot(b);
+                else if (yA * yB < 0) {
+                    let root = a;
+                    let currA = a, currB = b, currYA = yA;
+                    for(let i=0; i<40; i++) {
+                        let mid = (currA+currB)/2;
+                        let yMid = safeEvaluate(d1, {x: mid});
+                        if (Math.abs(yMid) < 1e-10) { root = mid; break; }
+                        if (currYA * yMid < 0) { currB = mid; } 
+                        else { currA = mid; currYA = yMid; }
+                        root = mid;
+                    }
+                    addRoot(root);
+                }
+                
+                let yA2 = safeEvaluate(d2, {x: a});
+                let yB2 = safeEvaluate(d2, {x: b});
+                
+                if (Math.abs(yA2) < 1e-9) { addRoot(a); }
+                else if (Math.abs(yB2) < 1e-9) { addRoot(b); }
+                else if (yA2 * yB2 < 0) {
+                    let root_d2 = a;
+                    let currA = a, currB = b, currYA2 = yA2;
+                    for(let i=0; i<40; i++) {
+                        let mid = (currA+currB)/2;
+                        let yMid = safeEvaluate(d2, {x: mid});
+                        if (Math.abs(yMid) < 1e-10) { root_d2 = mid; break; }
+                        if (currYA2 * yMid < 0) { currB = mid; } 
+                        else { currA = mid; currYA2 = yMid; }
+                        root_d2 = mid;
+                    }
+                    addRoot(root_d2);
+                }
+            }
+
+            stationaryPoints.sort((a, b) => a - b);
+
+            let html = `
+                <div class="analysis-result">
+                    <h3 class="analysis-subtitle">Step 1 & 2: Calculate Derivatives & Find Roots</h3>
+                    <div class="components-box" style="margin-bottom: 20px; display:inline-block;">
+                        $f'(x) = ${d1.toTex(texOptions)}$ <br>
+                        $f''(x) = ${d2.toTex(texOptions)}$
+                    </div>
+            `;
+                    
+            html += `<h3 class="analysis-subtitle">Step 3: Determine Nature of Stationary Points</h3>`;
+            if (stationaryPoints.length === 0) {
+                html += `<p>No stationary points found within the scanned domain.</p>`;
+            } else {
+                html += `<div class="steps-wrapper" style="padding:0; box-shadow:none; background:transparent;">`;
+                
+                stationaryPoints.forEach((pt, idx) => {
+                    let yVal = safeEvaluate(node, { x: pt });
+                    let d2ValRaw = safeEvaluate(d2, { x: pt });
+                    
+                    let xStr = recognizeExact(pt);
+                    let yStr = recognizeExact(yVal);
+                    let d2Str = recognizeExact(d2ValRaw);
+                    
+                    let nature = "";
+                    let breakdown = "";
+                    
+                    // Second Derivative Test
+                    if (d2ValRaw > 1e-5) {
+                        nature = "Local Minimum";
+                        breakdown = `
+                            <strong>Rule Applied:</strong> Second Derivative Test <br>
+                            <strong>Breakdown:</strong> Substitute $x = ${xStr}$ into the second derivative $f''(x)$. <br>
+                            $f''(${xStr}) = ${d2Str}$ <br>
+                            <strong>Show & Tell:</strong> Since $f''(${xStr}) > 0$, the curve is <em>concave up</em> (shaped like a valley or a smile) at this point. Therefore, the coordinate is a <strong style="color:#27ae60;">${nature}</strong>.
+                        `;
+                    } else if (d2ValRaw < -1e-5) {
+                        nature = "Local Maximum";
+                        breakdown = `
+                            <strong>Rule Applied:</strong> Second Derivative Test <br>
+                            <strong>Breakdown:</strong> Substitute $x = ${xStr}$ into the second derivative $f''(x)$. <br>
+                            $f''(${xStr}) = ${d2Str}$ <br>
+                            <strong>Show & Tell:</strong> Since $f''(${xStr}) < 0$, the curve is <em>concave down</em> (shaped like a peak or a frown) at this point. Therefore, the coordinate is a <strong style="color:#c0392b;">${nature}</strong>.
+                        `;
+                    } else {
+                        // First Derivative Test Fallback
+                        let stepAmt = 1e-3;
+                        let leftDeriv = safeEvaluate(d1, { x: pt - stepAmt });
+                        let rightDeriv = safeEvaluate(d1, { x: pt + stepAmt });
+                        
+                        if (leftDeriv < -1e-9 && rightDeriv > 1e-9) {
+                            nature = "Local Minimum";
+                            breakdown = `
+                                <strong>Rule Applied:</strong> First Derivative Test (Second Derivative was $0$) <br>
+                                <strong>Breakdown:</strong> We test the slope $f'(x)$ just before and just after $x = ${xStr}$. <br>
+                                Left of point: $f'(x)$ is negative (decreasing). <br>
+                                Right of point: $f'(x)$ is positive (increasing). <br>
+                                <strong>Show & Tell:</strong> The curve goes down, bottoms out, and comes back up. Therefore, it is a <strong style="color:#27ae60;">${nature}</strong>.
+                            `;
+                        } else if (leftDeriv > 1e-9 && rightDeriv < -1e-9) {
+                            nature = "Local Maximum";
+                            breakdown = `
+                                <strong>Rule Applied:</strong> First Derivative Test (Second Derivative was $0$) <br>
+                                <strong>Breakdown:</strong> We test the slope $f'(x)$ just before and just after $x = ${xStr}$. <br>
+                                Left of point: $f'(x)$ is positive (increasing). <br>
+                                Right of point: $f'(x)$ is negative (decreasing). <br>
+                                <strong>Show & Tell:</strong> The curve goes up, peaks, and comes back down. Therefore, it is a <strong style="color:#c0392b;">${nature}</strong>.
+                            `;
+                        } else {
+                            nature = "Point of Inflection";
+                            breakdown = `
+                                <strong>Rule Applied:</strong> First Derivative Test (Second Derivative was $0$) <br>
+                                <strong>Breakdown:</strong> We test the slope $f'(x)$ just before and just after $x = ${xStr}$. The slope does <em>not</em> change sign. <br>
+                                <strong>Show & Tell:</strong> The curve flattens out but continues in the same vertical direction (like a shelf). Therefore, it is a <strong style="color:#d35400;">${nature}</strong>.
+                            `;
+                        }
+                    }
+                    
+                    html += `
+                        <div class="conclusion-box" style="margin-bottom: 15px; padding: 15px; border-left: 5px solid #2980b9; background-color: #f1f8ff; border-radius: 4px;">
+                            <strong style="font-size: 1.1em; color: #2c3e50;">Point ${idx+1}:</strong> Coordinate $(x = ${xStr}, y = ${yStr})$ <br><br>
+                            <div style="color: #34495e; line-height: 1.6;">
+                                ${breakdown}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            
+            html += `</div>`;
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = html;
+            MathJax.typesetPromise([resultDiv]);
+            
+        } catch (e) {
+            resultDiv.style.display = "block";
+            resultDiv.innerHTML = `
+                <div class="steps-wrapper" style="margin-top: 20px;">
+                    <div class="error-box" style="margin: 0;">
+                        Syntax Error in Master Function.
+                        <span class="error-details">Details: ${e.message}</span>
+                    </div>
+                </div>`;
+        }
+    }
+</script>
+</body>
+</html>
