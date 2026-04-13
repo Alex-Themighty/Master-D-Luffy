@@ -394,6 +394,17 @@ DON'T BE LAZY, USE IT TO LEARN NOT TO SKIP THE LEARNING.
 </div>
 
 <script>
+// GLOBAL ENTER KEY FIX
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const activeTab = document.querySelector('.tab-content.active').id;
+                if (activeTab === 'tab-theory') {
+                    solveDerivative();
+                } else if (activeTab === 'tab-applications') {
+                    calcInstantaneous();
+                }
+            }
+        });
     // --- SECURITY FIX 2: Domain Lock ---
     // Change "yourwebsite.com" to your actual domain name. 
     // "" and "localhost" let you test it on your computer by opening the HTML file directly.
