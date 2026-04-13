@@ -127,6 +127,12 @@
         input[type="text"], input[type="number"] {
             padding: 10px;
             font-size: 1.1rem;
+            // New addition
+document.getElementById('functionInput').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+        solveDifferentiation();
+    }
+});
             border: 1px solid #ccc;
             border-radius: 4px;
             font-family: monospace;
