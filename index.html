@@ -304,8 +304,8 @@
 </div>
     
     <div class="tab-container">
-        <button class="tab-btn active" onclick="openTab('theory', this)">Part 1: Rules & Solver</button>
-        <button class="tab-btn" onclick="openTab('applications', this)">Part 2: Applications</button>
+        <button class="tab-btn active" onclick="openTab('tab-theory', this)">Part 1: Rules & Solver</button>
+        <button class="tab-btn" onclick="openTab('tab-applications', this)">Part 2: Applications</button>
     </div>
 
     <div id="tab-theory" class="tab-content active">
@@ -396,13 +396,20 @@
 </div>
 
 <script>
-// GLOBAL ENTER KEY FIX
+function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // GLOBAL ENTER KEY FIX
         document.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 const activeTab = document.querySelector('.tab-content.active').id;
-                if (activeTab === 'applications') {
+                if (activeTab === 'tab-applications') {
                     calcInstantaneous();
-                } else if (activeTab === 'theory') {
+                } else if (activeTab === 'tab-theory') {
                     solveDerivative();
                 }
             }
