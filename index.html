@@ -423,7 +423,17 @@
     }
 
     // --- ENGINE CORE FIXES (V1.7 AST Engine) ---
-
+    // GLOBAL ENTER KEY FIX
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                const activeTab = document.querySelector('.tab-content.active').id;
+                if (activeTab === 'gradient') {
+                    calculateGradient();
+                } else if (activeTab === 'solver') {
+                    solveDifferentiation();
+                }
+            }
+        });
     // 1. Sanitize text input before parsing
     function sanitize(raw) {
         let str = raw.replace(/\[/g, '(').replace(/\]/g, ')').replace(/\{/g, '(').replace(/\}/g, ')');
