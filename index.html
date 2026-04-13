@@ -284,24 +284,23 @@
 
 <div class="container">
     <h1>Differentiation Masterclass</h1>
-<div class="intro-box">
-    <p class="developer-credit">
-        Developed by Alex Themighty...mostly for the 'sharp' students of mine to revise for their exams
-        <br><br>
-        IN THIS INTERACTIVE TOOL YOU CAN
-    </p>
+<p class="developer-credit">
+Developed by Alex Themighty...mostly for the 'sharp' students of mine to revise for their exams
+<br><br>
 
-    <ol class="feature-list">
-        <li>Learn the rules</li>
-        <li>Use the solver to check your answer (step-by-step with my fav. G.U.E.S.S Method)</li>
-        <li>Find instant and average gradient</li>
-        <li>Find turning points of a differentiable function and their nature</li>
-    </ol>
+IN THIS INTERACTIVE TOOL YOU CAN
+</p>
 
-    <p class="developer-credit">
-        DON'T BE LAZY — use it to LEARN, not to skip the learning.
-    </p>
-</div>
+<ol class="feature-list">
+    <li>Learn the rules</li>
+    <li>Use the solver to check your answer, the solver is coded to show steps by step using my fav. G.U.E.S.S Method</li>
+    <li>Find instant and average gradient</li>
+    <li>Find turning points of a differentiable function and their nature</li>
+</ol>
+
+<p class="developer-credit">
+DON'T BE LAZY, USE IT TO LEARN NOT TO SKIP THE LEARNING.
+</p>
     
     <div class="tab-container">
         <button class="tab-btn active" onclick="openTab('tab-theory', this)">Part 1: Rules & Solver</button>
@@ -374,7 +373,7 @@
                 <div>
                     <strong>Average Gradient:</strong> Find the secant slope between two points.
                     <div class="input-group" style="margin-top: 10px;">
-                        $x_1 = $ <input type="text" id="avgX1" class="small-input" value="ln(3)">
+                        $x_1 = $ <input type="text" id="avgX1" class="small-input" value="0">
                         $x_2 = $ <input type="text" id="avgX2" class="small-input" value="pi/2">
                         <button class="calc-btn action-btn" onclick="calcAverage()">Calculate</button>
                     </div>
@@ -395,17 +394,6 @@
 </div>
 
 <script>
-    // GLOBAL ENTER KEY FIX
-        document.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') {
-                const activeTab = document.querySelector('.tab-content.active').id;
-                if (activeTab === 'tab-applications') {
-                    calcInstantaneous();
-                } else if (activeTab === 'tab-theory') {
-                    solveDerivative();
-                }
-            }
-        });
     // --- SECURITY FIX 2: Domain Lock ---
     // Change "yourwebsite.com" to your actual domain name. 
     // "" and "localhost" let you test it on your computer by opening the HTML file directly.
@@ -539,109 +527,26 @@
 
     // --- PART 1: SOLVER LOGIC ---
     function solveDerivative() {
-const input = document.getElementById('solverFuncInput').value;
-            const resultDiv = document.getElementById('result');
-            if (!input.trim()) return;
+        const rawInput = document.getElementById('funcInput1').value;
+        const resultDiv = document.getElementById('calcResult1');
+        if (!rawInput.trim()) {
+            resultDiv.innerHTML = "";
+            return;
+        }
 
-            try {
-                const node = math.parse(input);
-                const code = node.compile();
-                const d1 = math.derivative(input, 'x');
-                const d2 = math.derivative(d1, 'x');
-                
-                const d1Tex = d1.toTex();
-                const d2Tex = d2.toTex();
-                const d1Compiled = d1.compile();
-                const d2Compiled = d2.compile();
-                
-                let stationaryPoints = [];
-                const stepSize = 0.01;
-                const searchRange = 50; 
-                
-                for (let x = -searchRange; x <= searchRange; x = parseFloat((x + stepSize).toFixed(2))) {
-                    const v1 = d1Compiled.evaluate({x: x});
-                    const v2 = d1Compiled.evaluate({x: parseFloat((x + stepSize).toFixed(2))});
-                    
-                    if (v1 === 0 || v1 * v2 < 0) {
-                        const root = v1 === 0 ? x : x - (v1 * stepSize) / (v2 - v1);
-                        const roundedRoot = parseFloat(root.toFixed(4));
-                        if (!stationaryPoints.some(p => Math.abs(p - roundedRoot) < 0.01)) {
-                            stationaryPoints.push(roundedRoot);
-                        }
-                    }
-                }
-                stationaryPoints.sort((a, b) => a - b);
-
-                let html = `<div class="steps-wrapper">`;
-                
-                html += `
-                    <div class="step-item">
-                        <span class="step-header">Step 1: Perform Differentiation</span>
-                        <div class="math-display">
-                            $f(x) = ${node.toTex()}$ <br><br>
-                            $f'(x) = ${d1Tex}$ <br>
-                            $f''(x) = ${d2Tex}$
-                        </div>
-                    </div>
-                `;
-
-                html += `
-                    <div class="step-item">
-                        <span class="step-header">Step 2: Find Stationary Points ($f'(x) = 0$)</span>
-                        <div class="math-display">
-                            $0 = ${d1Tex}$ <br><br>
-                            ${stationaryPoints.length > 0 ? 
-                                `Stationary points found at: $x = ${stationaryPoints.join(',\\ ')}$` : 
-                                `No stationary points found in search range.`}
-                        </div>
-                    </div>
-                `;
-
-                if (stationaryPoints.length > 0) {
-                    html += `<div class="step-item"><span class="step-header">Step 3: Determine Nature (Second Derivative & Concavity Test)</span>`;
-                    
-                    stationaryPoints.forEach((xVal, idx) => {
-                        const yVal = code.evaluate({x: xVal});
-                        const fDoubleVal = d2Compiled.evaluate({x: xVal});
-                        
-                        const xStr = xVal.toString();
-                        const yStr = yVal.toFixed(4);
-                        const f2Str = fDoubleVal.toFixed(4);
-                        
-                        let nature = "";
-                        let breakdown = "";
-
-                        if (fDoubleVal < -0.000001) {
-                            nature = "Maximum Point";
-                            breakdown = `Substitute $x = ${xStr}$ into $f''(x)$: <br> $f''(${xStr}) = ${f2Str} < 0$. <br> Since the second derivative is negative, the curve is concave down. <br> Therefore, it is a <strong style="color:#e74c3c;">${nature}</strong>.`;
-                        } else if (fDoubleVal > 0.000001) {
-                            nature = "Minimum Point";
-                            breakdown = `Substitute $x = ${xStr}$ into $f''(x)$: <br> $f''(${xStr}) = ${f2Str} > 0$. <br> Since the second derivative is positive, the curve is concave up. <br> Therefore, it is a <strong style="color:#27ae60;">${nature}</strong>.`;
-                        } else {
-                            // POI NEIGHBORHOOD CONCAVITY CHECK - RESTORED LOGIC
-                            const eps = 0.01;
-                            const leftConcavity = d2Compiled.evaluate({x: xVal - eps});
-                            const rightConcavity = d2Compiled.evaluate({x: xVal + eps});
-                            
-                            if (leftConcavity * rightConcavity < 0) {
-                                nature = "Inflection Point";
-                                breakdown = `
-                                    Substitute $x = ${xStr}$ into $f''(x)$: <br> $f''(${xStr}) = 0$. <br><br>
-                                    <strong>Concavity Check:</strong> <br>
-                                    Check neighborhood: $f''(${xVal - eps}) = ${leftConcavity.toFixed(4)}$ and $f''(${xVal + eps}) = ${rightConcavity.toFixed(4)}$. <br>
-                                    Since the sign of $f''(x)$ changes, the concavity flips. <br>
-                                    Therefore, it is an <strong style="color:#d35400;">${nature}</strong>.
-                                `;
-                            } else {
-                                nature = leftConcavity > 0 ? "Minimum Point" : "Maximum Point";
-                                breakdown = `
-                                    Substitute $x = ${xStr}$ into $f''(x)$: <br> $f''(${xStr}) = 0$. <br><br>
-                                    <strong>Concavity Check:</strong> <br>
-                                    $f''(x)$ does not change sign around $x = ${xStr}$. <br>
-                                    Therefore, this is a stationary <strong style="color:#2c3e50;">${nature} (Higher-order)</strong>.
-                                `;
-                            }
-                        }
+        const input = sanitize(rawInput);
+        let stepsHTML = `<div class="steps-wrapper"><div class="steps-container">`;
+        
+        try {
+            const node = safeParse(input);
+            stepsHTML += `
+                <div class="step-block">
+                    <div class="step-label">STEP 1: IDENTIFY FUNCTION</div>
+                    $$f(x) = ${node.toTex(texOptions)}$$
+                </div>
+            `;
+            
+            let finalDerivNode = null;
             
             // --- PRODUCT RULE (12) ---
             if (node.type === 'OperatorNode' && node.op === '*') {
